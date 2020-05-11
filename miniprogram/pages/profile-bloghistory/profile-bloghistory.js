@@ -34,6 +34,33 @@ Page({
       wx.hideLoading()
     })
   },
+  _getListByMiniprogram() {
+    wx.showLoading({
+      title: '加载中',
+    })
+    db.collection('blog').skip(this.data.blogList.length)
+      .limit(MAX_LIMIT).orderBy('createTime', 'desc').get().then((res) => {
+        console.log(res)
+        let _bloglist = res.data
+        for (let i = 0, len = _bloglist.length; i < len; i++) {
+          _bloglist[i].createTime = _bloglist[i].createTime.toString()
+        }
+
+
+        this.setData({
+          blogList: this.data.blogList.concat(_bloglist)
+        })
+
+        wx.hideLoading()
+      })
+
+  },
+
+  goComment(event) {
+    wx.navigateTo({
+      url: `../blog-comment/blog-comment?blogId=${event.target.dataset.blogid}`,
+    })
+  },
   /**
    * 生命周期函数--监听页面初次渲染完成
    */
@@ -65,7 +92,7 @@ Page({
   /**
    * 页面相关事件处理函数--监听用户下拉动作
    */
-  onPullDownRefresh: function () {
+  onPullDownRefrefsh: function () {
 
   },
 
@@ -79,7 +106,11 @@ Page({
   /**
    * 用户点击右上角分享
    */
-  onShareAppMessage: function () {
-
+  onShareAppMessage: function (event) {
+    const blog = event.target.dataset.blog
+    return {
+      title: blog.content,
+      path: `/pages/blog-comment/blog-comment?blogId=${blog._id}`
+    }
   }
 })
